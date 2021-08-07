@@ -3,8 +3,10 @@ package com.example.multifx
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ProgressDialog
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.IntentSender.SendIntentException
 import android.location.LocationManager
 import android.os.Bundle
@@ -22,7 +24,11 @@ import com.google.android.gms.location.*
 class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var context: Context
+
     lateinit var activity: Activity
+
+    private val filter: IntentFilter? = null
+    private val TAG = "BasicActivity"
     lateinit var progDailog: ProgressDialog
    lateinit var locationManager:LocationManager
     fun isGpsEnabled(): Boolean {
@@ -41,11 +47,16 @@ class MainActivity : AppCompatActivity() {
         } catch (e: NullPointerException) {
         }
         setContentView(R.layout.activity_main)
+        activity = this;
+
+
+
+
             locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         statusCheck()
         webView = findViewById(R.id.webView)
         val url = "https://maxelint.com/"
-        activity = this;
+
         context=this
         progDailog = ProgressDialog.show(activity, "Loading", "Please wait...", true);
         progDailog.setCancelable(false);
@@ -54,8 +65,8 @@ class MainActivity : AppCompatActivity() {
         webView.getSettings().setUseWideViewPort(true);
         webView.webChromeClient = object : WebChromeClient() {
             override fun onGeolocationPermissionsShowPrompt(
-                origin: String,
-                callback: GeolocationPermissions.Callback
+                    origin: String,
+                    callback: GeolocationPermissions.Callback
             ) {
                 callback.invoke(origin, true, false)
             }
@@ -111,8 +122,8 @@ class MainActivity : AppCompatActivity() {
                                 // Show the dialog by calling startResolutionForResult(),
                                 // and check the result in onActivityResult().
                                 resolvable.startResolutionForResult(
-                                    this@MainActivity,
-                                    REQUEST_CHECK_SETTINGS
+                                        this@MainActivity,
+                                        REQUEST_CHECK_SETTINGS
                                 )
                             } catch (e: SendIntentException) {
                                 // Ignore the error.
@@ -136,15 +147,12 @@ class MainActivity : AppCompatActivity() {
         val states = LocationSettingsStates.fromIntent(data)
         when (requestCode) {
             REQUEST_CHECK_SETTINGS -> when (resultCode) {
-                RESULT_OK ->
-                    // All required changes were successfully made
+                RESULT_OK -> GpsSuccess()
 
-                    Toast.makeText(
-                        applicationContext,
-                        "User has clicked on OK - So GPS is on",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                RESULT_CANCELED ->closeApp()
+                // All required changes were successfully made
+
+
+                RESULT_CANCELED -> closeApp()
                 // The user was asked to change settings, but chose not to
 
 
@@ -155,15 +163,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun GpsSuccess() {
+        Toast.makeText(
+                applicationContext,
+                "User has clicked on OK - So GPS is on",
+                Toast.LENGTH_SHORT
+        ).show()
+    }
+
     private fun closeApp() {
         Toast.makeText(
-            applicationContext,
-            "User has clicked on NO, THANKS - So GPS is still off.",
-            Toast.LENGTH_SHORT
+                applicationContext,
+                "User has clicked on NO, THANKS - So GPS is still off.",
+                Toast.LENGTH_SHORT
         ).show()
         this.finishAffinity();
         System.exit(0)
     }
+
+    override fun onPause() {
+        super.onPause()
+
+
+    }
+
 }
 
 
